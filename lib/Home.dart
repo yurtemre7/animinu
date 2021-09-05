@@ -57,19 +57,7 @@ class _HomeState extends State<Home> {
           child: Column(
             children: [
               aentryInput(),
-              Expanded(
-                child: FirebaseAnimatedList(
-                  query: database.reference().child('${user.uid}').child('anime'),
-                  sort: (a, b) => a.value['added'].compareTo(b.value['added']),
-                  itemBuilder: (context, snapshot, animation, index) {
-                    final data = AEntry.fromSnapshot(snapshot.value!);
-                    return SizeTransition(
-                      child: aentryTile(data, snapshot),
-                      sizeFactor: animation,
-                    );
-                  },
-                ),
-              ),
+              userAnimeList(),
             ],
           ),
         ),
@@ -77,7 +65,24 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Container aentryInput() {
+  Widget userAnimeList() {
+    return Expanded(
+      child: FirebaseAnimatedList(
+        query: database.reference().child('${user.uid}').child('anime'),
+        sort: (a, b) => a.value['added'].compareTo(b.value['added']),
+        defaultChild: Center(child: CircularProgressIndicator()),
+        itemBuilder: (context, snapshot, animation, index) {
+          final data = AEntry.fromSnapshot(snapshot.value!);
+          return SizeTransition(
+            child: aentryTile(data, snapshot),
+            sizeFactor: animation,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget aentryInput() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
