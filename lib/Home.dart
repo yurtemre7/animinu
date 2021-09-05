@@ -52,7 +52,9 @@ class _HomeState extends State<Home> {
         onTap: () => FocusScope.of(context).unfocus(),
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Column(
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            shrinkWrap: true,
             children: [
               aentryInput(),
               userAnimeList(),
@@ -64,9 +66,15 @@ class _HomeState extends State<Home> {
   }
 
   Widget userAnimeList() {
-    return Expanded(
+    var query = database.reference().child('${user.uid}').child('anime');
+    return RefreshIndicator(
+      onRefresh: () async {
+        setState(() {});
+      },
+      triggerMode: RefreshIndicatorTriggerMode.onEdge,
       child: FirebaseAnimatedList(
-        query: database.reference().child('${user.uid}').child('anime'),
+        shrinkWrap: true,
+        query: query,
         sort: (a, b) => a.value['added'].compareTo(b.value['added']),
         defaultChild: Center(child: CircularProgressIndicator()),
         itemBuilder: (context, snapshot, animation, index) {
