@@ -23,9 +23,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-
     user = context.read(myUser).state!;
-
     print(user);
   }
 
@@ -72,7 +70,7 @@ class _HomeState extends State<Home> {
         sort: (a, b) => a.value['added'].compareTo(b.value['added']),
         defaultChild: Center(child: CircularProgressIndicator()),
         itemBuilder: (context, snapshot, animation, index) {
-          final data = AEntry.fromSnapshot(snapshot.value!);
+          final data = AEntry.fromSnapshot(snapshot.value);
           return SizeTransition(
             child: aentryTile(data, snapshot),
             sizeFactor: animation,
@@ -106,11 +104,10 @@ class _HomeState extends State<Home> {
                 showDialog(
                   context: context,
                   builder: (context) {
+                    TextEditingController currentController = TextEditingController();
+                    TextEditingController totalController = TextEditingController();
                     return StatefulBuilder(
                       builder: (context, setStateDialog) {
-                        TextEditingController currentController = TextEditingController();
-                        TextEditingController totalController = TextEditingController();
-
                         return AlertDialog(
                           title: Text('Anime hinzufügen'),
                           content: SingleChildScrollView(
@@ -202,9 +199,111 @@ class _HomeState extends State<Home> {
             ),
             onTap: () {
               FocusScope.of(context).unfocus();
+              showDialog(
+                context: context,
+                builder: (context) {
+                  TextEditingController currentController =
+                      TextEditingController(text: '${data.currentEpisode}');
+                  return StatefulBuilder(
+                    builder: (context, setState) {
+                      return AlertDialog(
+                        title: Text('Dein Fortschritt'),
+                        content: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${data.title}',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: IconButton(
+                                        onPressed: () {
+                                          if (currentController.text != '1') {
+                                            setState(() {
+                                              currentController.text =
+                                                  '${int.parse(currentController.text) - 1}';
+                                            });
+                                          }
+                                          FocusScope.of(context).unfocus();
+                                        },
+                                        icon: Icon(Icons.remove)),
+                                  ),
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: currentController,
+                                      keyboardType: TextInputType.number,
+                                      onChanged: (value) {
+                                        if (value.isNotEmpty) {
+                                          setState(() {
+                                            if ((int.tryParse(currentController.text) ??
+                                                    data.totalEpisodes + 1) >
+                                                data.totalEpisodes) {
+                                              currentController.text = '${data.totalEpisodes}';
+                                            }
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: IconButton(
+                                      onPressed: () {
+                                        if (currentController.text != '${data.totalEpisodes}') {
+                                          setState(() {
+                                            currentController.text =
+                                                '${int.parse(currentController.text) + 1}';
+                                          });
+                                        }
+                                        FocusScope.of(context).unfocus();
+                                      },
+                                      icon: Icon(Icons.add),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            child: Text('Abbruch'),
+                            onPressed: () {
+                              pop(context);
+                              FocusScope.of(context).unfocus();
+                            },
+                          ),
+                          ElevatedButton(
+                            child: Text('Update'),
+                            onPressed: () async {
+                              if (currentController.text.isNotEmpty) {
+                                await updateEntry(
+                                  entry: AEntry(
+                                    title: data.title,
+                                    currentEpisode: int.tryParse(currentController.text) ?? 0,
+                                    totalEpisodes: data.totalEpisodes,
+                                    added: data.added,
+                                  ),
+                                  key: snapshot.key!,
+                                );
+
+                                pop(context);
+                              }
+                              FocusScope.of(context).unfocus();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              );
             },
             onLongPress: () {
-              print(snapshot.key);
               deleteAEntry(snapshot.key!);
               FocusScope.of(context).unfocus();
             },
@@ -222,6 +321,15 @@ class _HomeState extends State<Home> {
 
   Future<void> addEntry({required AEntry entry}) async {
     await database.reference().child('${user.uid}').child('anime').push().set({
+      'title': entry.title,
+      'currentEpisode': entry.currentEpisode,
+      'totalEpisodes': entry.totalEpisodes,
+      'added': entry.added.millisecondsSinceEpoch,
+    });
+  }
+
+  Future<void> updateEntry({required AEntry entry, required String key}) async {
+    await database.reference().child('${user.uid}').child('anime').child(key).update({
       'title': entry.title,
       'currentEpisode': entry.currentEpisode,
       'totalEpisodes': entry.totalEpisodes,
