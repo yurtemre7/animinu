@@ -3,6 +3,7 @@ import 'package:animinu/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
   Login({Key? key}) : super(key: key);
@@ -61,14 +62,17 @@ class _LoginState extends State<Login> {
           alignment: MainAxisAlignment.end,
           children: [
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (formKey.currentState!.validate()) {
-                  auth
+                  await auth
                       .signInWithEmailAndPassword(
                     email: emailController.text.trim(),
                     password: passwordController.text.trim(),
                   )
-                      .then((user) {
+                      .then((user) async {
+                    final sp = await SharedPreferences.getInstance();
+                    sp.setString('email', user.user!.email!);
+                    sp.setString('passwort', passwordController.text.trim());
                     context.read(myUser).state = user.user;
                   }).catchError((error) {
                     error = error as FirebaseAuthException;
@@ -83,16 +87,19 @@ class _LoginState extends State<Login> {
               ),
             ),
             OutlinedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   auth
                       .createUserWithEmailAndPassword(
                     email: emailController.text.trim(),
                     password: passwordController.text.trim(),
                   )
-                      .then((user) {
+                      .then((user) async {
+                    final sp = await SharedPreferences.getInstance();
+                    sp.setString('email', user.user!.email!);
+                    sp.setString('passwort', passwordController.text.trim());
                     context.read(myUser).state = user.user;
-                    database.reference().child(user.user!.uid).child('profile').set({
+                    await database.reference().child(user.user!.uid).child('profile').set({
                       'name': emailController.text.trim().split('@')[0],
                       'email': emailController.text.trim(),
                       'uid': user.user!.uid,
