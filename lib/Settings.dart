@@ -76,10 +76,27 @@ class _SettingsState extends State<Settings> {
                       Dividers.horizontalDivider(),
                       ListTile(
                         trailing: Icon(Icons.email),
-                        title: Text('Deine E-Mail:'),
-                        subtitle: Text(
+                        title: Text(
                           watch(email).state!,
                         ),
+                        subtitle: !watch(myUser).state!.emailVerified
+                            ? Text(
+                                'Bitte bestätige deine E-Mail.',
+                                style: TextStyle(color: Colors.red),
+                              )
+                            : null,
+                        onTap: !watch(myUser).state!.emailVerified
+                            ? () {
+                                context.read(myUser).state!.sendEmailVerification();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Bestätigungsemail wurde versandt. Bitte auch im Spam nachgucken.',
+                                    ),
+                                  ),
+                                );
+                              }
+                            : null,
                       ),
                       Dividers.horizontalDivider(),
                     ],
@@ -113,7 +130,7 @@ class _SettingsState extends State<Settings> {
                 onTap: () async {
                   await auth.signOut();
                   final sp = await SharedPreferences.getInstance();
-                  sp.clear();
+                  await sp.clear();
                   pop(context);
                 },
               ),
