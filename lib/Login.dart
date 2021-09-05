@@ -97,6 +97,7 @@ class _LoginState extends State<Login> {
                       'email': emailController.text.trim(),
                       'uid': user.user!.uid,
                     });
+                    context.read(myUser).state!.sendEmailVerification();
                   }).catchError((error) {
                     error = error as FirebaseAuthException;
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
