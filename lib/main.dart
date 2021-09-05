@@ -9,6 +9,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final auth = FirebaseAuth.instance;
 final database = FirebaseDatabase.instance;
 final myUser = StateProvider<User?>((ref) {});
+final username = StateProvider<String?>((ref) {});
+final email = StateProvider<String?>((ref) {});
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
