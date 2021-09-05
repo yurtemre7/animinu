@@ -24,7 +24,19 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     user = context.read(myUser).state!;
+
     print(user);
+    getUserData();
+  }
+
+  void getUserData() async {
+    final userData = database.reference().child('${user.uid}').child('profile');
+    userData.once().then((DataSnapshot snapshot) {
+      context.read(username).state = snapshot.value['name'];
+      context.read(email).state = snapshot.value['email'];
+      print(snapshot.value);
+      print(snapshot.value['name']);
+    });
   }
 
   @override
@@ -37,11 +49,12 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
-        leading: Icon(Icons.home),
+        title: Text('Deine AnimInu Liste'),
+        leading: Icon(Icons.list_alt),
         actions: [
           IconButton(
             icon: Icon(Icons.settings),
+            tooltip: 'Einstellungen',
             onPressed: () {
               push(context, Settings());
             },
@@ -97,6 +110,9 @@ class _HomeState extends State<Home> {
           Expanded(
             child: TextFormField(
               controller: inputController,
+              autocorrect: false,
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.sentences,
               onChanged: (value) {
                 setState(() {});
               },
