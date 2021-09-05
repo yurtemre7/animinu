@@ -120,10 +120,10 @@ class _HomeState extends State<Home> {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: Text('Anime entfernen'),
-                    content: Text('Möchtest du ${data.title} wirklich aus deiner Liste entfernen?'),
+                    content: Text('Möchtest du "${data.title}" wirklich aus deiner Liste entfernen?'),
                     actions: [
                       TextButton(
-                        child: Text('Abbrechen'),
+                        child: Text('Abbruch'),
                         onPressed: () => Navigator.of(context).pop(false),
                       ),
                       ElevatedButton(
