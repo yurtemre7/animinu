@@ -79,23 +79,27 @@ class _SettingsState extends State<Settings> {
                         title: Text(
                           watch(email).state!,
                         ),
-                        subtitle: !watch(myUser).state!.emailVerified
-                            ? Text(
-                                'Bitte bestätige deine E-Mail.',
-                                style: TextStyle(color: Colors.red),
-                              )
+                        subtitle: watch(myUser).state != null
+                            ? !watch(myUser).state!.emailVerified
+                                ? Text(
+                                    'Bitte bestätige deine E-Mail.',
+                                    style: TextStyle(color: Colors.red),
+                                  )
+                                : null
                             : null,
-                        onTap: !watch(myUser).state!.emailVerified
-                            ? () {
-                                context.read(myUser).state!.sendEmailVerification();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Bestätigungsemail wurde versandt. Bitte auch im Spam nachgucken.',
-                                    ),
-                                  ),
-                                );
-                              }
+                        onTap: watch(myUser).state != null
+                            ? !watch(myUser).state!.emailVerified
+                                ? () {
+                                    context.read(myUser).state!.sendEmailVerification();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Bestätigungsemail wurde versandt. Bitte auch im Spam nachgucken.',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                : null
                             : null,
                       ),
                       Dividers.horizontalDivider(),
