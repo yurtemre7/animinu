@@ -8,6 +8,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   Home({Key? key}) : super(key: key);
@@ -34,9 +35,15 @@ class _HomeState extends State<Home> {
     userData.once().then((DataSnapshot snapshot) {
       context.read(username).state = snapshot.value['name'];
       context.read(email).state = snapshot.value['email'];
-      print(snapshot.value);
-      print(snapshot.value['name']);
     });
+
+    if (!user.emailVerified) {
+      final sp = await SharedPreferences.getInstance();
+      auth.signInWithEmailAndPassword(
+        email: sp.getString('email') ?? '',
+        password: sp.getString('passwort') ?? '',
+      );
+    }
   }
 
   @override
@@ -82,7 +89,9 @@ class _HomeState extends State<Home> {
     var query = database.reference().child('${user.uid}').child('anime');
     return RefreshIndicator(
       onRefresh: () async {
-        setState(() {});
+        setState(() {
+          getUserData();
+        });
       },
       triggerMode: RefreshIndicatorTriggerMode.onEdge,
       child: FirebaseAnimatedList(
@@ -93,7 +102,42 @@ class _HomeState extends State<Home> {
         itemBuilder: (context, snapshot, animation, index) {
           final data = AEntry.fromSnapshot(snapshot.value);
           return SizeTransition(
-            child: aentryTile(data, snapshot),
+            child: Dismissible(
+              direction: DismissDirection.endToStart,
+              onDismissed: (direction) async {
+                FocusScope.of(context).unfocus();
+                if (direction == DismissDirection.endToStart) {
+                  await database
+                      .reference()
+                      .child('${user.uid}')
+                      .child('anime')
+                      .child(snapshot.key!)
+                      .remove();
+                }
+              },
+              confirmDismiss: (direction) async {
+                final result = await showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Anime entfernen'),
+                    content: Text('Möchtest du ${data.title} wirklich aus deiner Liste entfernen?'),
+                    actions: [
+                      TextButton(
+                        child: Text('Abbrechen'),
+                        onPressed: () => Navigator.of(context).pop(false),
+                      ),
+                      ElevatedButton(
+                        child: Text('Entfernen'),
+                        onPressed: () => Navigator.of(context).pop(true),
+                      ),
+                    ],
+                  ),
+                );
+                return result;
+              },
+              key: Key(snapshot.key!),
+              child: aentryTile(data, snapshot),
+            ),
             sizeFactor: animation,
           );
         },
@@ -221,7 +265,7 @@ class _HomeState extends State<Home> {
                 style: TextStyle(color: Colors.grey, fontSize: 12),
               ),
             ),
-            onTap: () {
+            onLongPress: () {
               FocusScope.of(context).unfocus();
               showDialog(
                 context: context,
@@ -245,6 +289,7 @@ class _HomeState extends State<Home> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
+                                    flex: 2,
                                     child: IconButton(
                                         onPressed: () {
                                           if (currentController.text != '1') {
@@ -257,10 +302,13 @@ class _HomeState extends State<Home> {
                                         },
                                         icon: Icon(Icons.remove)),
                                   ),
-                                  Expanded(
+                                  Flexible(
+                                    flex: 1,
                                     child: TextFormField(
                                       controller: currentController,
                                       keyboardType: TextInputType.number,
+                                      textAlign: TextAlign.center,
+                                      maxLength: 4,
                                       onChanged: (value) {
                                         if (value.isNotEmpty) {
                                           setState(() {
@@ -275,6 +323,7 @@ class _HomeState extends State<Home> {
                                     ),
                                   ),
                                   Expanded(
+                                    flex: 2,
                                     child: IconButton(
                                       onPressed: () {
                                         if (currentController.text != '${data.totalEpisodes}') {
@@ -327,10 +376,6 @@ class _HomeState extends State<Home> {
                 },
               );
             },
-            onLongPress: () {
-              deleteAEntry(snapshot.key!);
-              FocusScope.of(context).unfocus();
-            },
           ),
           Dividers.horizontalDivider(),
         ],
@@ -359,32 +404,5 @@ class _HomeState extends State<Home> {
       'totalEpisodes': entry.totalEpisodes,
       'added': entry.added.millisecondsSinceEpoch,
     });
-  }
-
-  void deleteAEntry(String key) async {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Löschen'),
-          content: Text('Möchtest du den Anime wirklich aus deiner Liste entfernen?'),
-          actions: [
-            TextButton(
-              child: Text('Abbruch'),
-              onPressed: () {
-                pop(context);
-              },
-            ),
-            ElevatedButton(
-              child: Text('Löschen'),
-              onPressed: () async {
-                await database.reference().child('${user.uid}').child('anime').child(key).remove();
-                pop(context);
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 }
