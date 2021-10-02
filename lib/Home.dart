@@ -72,12 +72,10 @@ class _HomeState extends State<Home> {
         onTap: () => FocusScope.of(context).unfocus(),
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            shrinkWrap: true,
+          child: Column(
             children: [
               aentryInput(),
-              userAnimeList(),
+              Expanded(child: userAnimeList()),
             ],
           ),
         ),
@@ -95,7 +93,7 @@ class _HomeState extends State<Home> {
       },
       triggerMode: RefreshIndicatorTriggerMode.onEdge,
       child: FirebaseAnimatedList(
-        shrinkWrap: true,
+        physics: AlwaysScrollableScrollPhysics(),
         query: query,
         sort: (a, b) => a.value['added'].compareTo(b.value['added']),
         defaultChild: Center(child: CircularProgressIndicator()),
