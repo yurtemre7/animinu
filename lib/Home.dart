@@ -94,6 +94,7 @@ class _HomeState extends State<Home> {
       triggerMode: RefreshIndicatorTriggerMode.onEdge,
       child: FirebaseAnimatedList(
         physics: AlwaysScrollableScrollPhysics(),
+        shrinkWrap: true,
         query: query,
         sort: (a, b) => a.value['added'].compareTo(b.value['added']),
         defaultChild: Center(child: CircularProgressIndicator()),
