@@ -65,6 +65,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.6.7"
+  efficient_autocomplete_formfield:
+    dependency: "direct main"
+    description:
+      name: efficient_autocomplete_formfield
+      sha256: "1a4e5357906aa25af4bc34ae56539249fc9a62649cfbb6211dbbb0375685c59d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.2+1"
   fake_async:
     dependency: transitive
     description:
@@ -232,6 +240,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.0"
+  http:
+    dependency: "direct main"
+    description:
+      name: http
+      sha256: "759d1a329847dd0f39226c688d3e06a6b8679668e350e2891a6474f8b4bb8525"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   http_parser:
     dependency: transitive
     description:
@@ -248,6 +264,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.7"
+  json_annotation:
+    dependency: transitive
+    description:
+      name: json_annotation
+      sha256: b10a7b2ff83d83c777edba3c6a0f97045ddadd56c944e1a23a3fdf43a1bf4467
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.8.1"
   lints:
     dependency: transitive
     description:
@@ -280,6 +304,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
+  myanimelist_api:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: master
+      resolved-ref: "0467fbf773194b376c6aae329b6fc29a875f0b3d"
+      url: "https://github.com/yurtemre7/MyAnimeList-API.git"
+    source: git
+    version: "1.0.0"
   path:
     dependency: transitive
     description:
@@ -453,6 +486,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.0"
+  textfield_state:
+    dependency: transitive
+    description:
+      name: textfield_state
+      sha256: "2dc47f3e367cd778b5483c8de6bd108066381c6d9c9347e2fd9b4767007eb5e0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
   typed_data:
     dependency: transitive
     description:

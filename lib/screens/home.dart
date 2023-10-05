@@ -4,6 +4,7 @@ import 'package:animinu/class/anime_entry.dart';
 import 'package:animinu/main.dart';
 import 'package:animinu/screens/settings.dart';
 import 'package:animinu/utilities.dart';
+import 'package:efficient_autocomplete_formfield/efficient_autocomplete_formfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';

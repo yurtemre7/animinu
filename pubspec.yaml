@@ -24,7 +24,15 @@ dependencies:
 
   shared_preferences: ^2.2.1
 
+  # anime info
+  myanimelist_api:
+    git:
+      url: https://github.com/yurtemre7/MyAnimeList-API.git
+      ref: master
+
   dynamic_color: ^1.6.7
+  efficient_autocomplete_formfield: ^0.3.2+1
+  http: ^1.1.0
 
 dev_dependencies:
   flutter_test:

@@ -14,6 +14,10 @@ final myUser = StateProvider<User?>((ref) => null);
 final username = StateProvider<String?>((ref) => null);
 final email = StateProvider<String?>((ref) => null);
 
+final animeClient = StateProvider<MALApi>((ref) {
+  return MALApi(accessToken: "", clientToken: malClientToken);
+});
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
