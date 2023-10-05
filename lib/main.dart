@@ -1,3 +1,4 @@
+import 'package:animinu/class/mal_api.dart';
 import 'package:animinu/screens/home.dart';
 import 'package:animinu/screens/login.dart';
 import 'package:dynamic_color/dynamic_color.dart';
