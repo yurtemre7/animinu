@@ -189,7 +189,42 @@ class _HomeState extends ConsumerState<Home> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: TextFormField(
+            child: EfficientAutocompleteFormField<String?>(
+              itemBuilder: (context, String? item) {
+                return Container(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: ListTile(
+                    title: Text(
+                      item ?? '',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                  ),
+                );
+              },
+              onSearch: (String? search) async {
+                if (search == null) {
+                  return [];
+                }
+
+                var trimmed = search.trim();
+                if (trimmed.isEmpty) {
+                  return [];
+                }
+
+                if (trimmed.length < 3) {
+                  return [];
+                }
+
+                var client = ref.read(animeClient);
+
+                var res = await client.api.searchAnime(search, limit: 10);
+
+                var titles = res.map((e) => e.title).toList();
+
+                return titles;
+              },
               controller: inputController,
               autocorrect: false,
               keyboardType: TextInputType.text,
