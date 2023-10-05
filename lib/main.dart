@@ -1,6 +1,7 @@
 import 'package:animinu/class/mal_api.dart';
 import 'package:animinu/screens/home.dart';
 import 'package:animinu/screens/login.dart';
+import 'package:animinu/token.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
