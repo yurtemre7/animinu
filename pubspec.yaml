@@ -12,17 +12,17 @@ dependencies:
   cupertino_icons: ^1.0.6
 
   # firebase
-  firebase_core: ^2.16.0
-  firebase_analytics: ^10.5.0
-  firebase_database: ^10.2.6
-  firebase_auth: ^4.10.0
+  firebase_core: ^2.24.2
+  firebase_analytics: ^10.7.4
+  firebase_database: ^10.3.8
+  firebase_auth: ^4.15.3
 
   # state
-  riverpod: ^2.4.0
-  flutter_riverpod: ^2.4.0
-  hooks_riverpod: ^2.4.0
+  riverpod: ^2.4.9
+  flutter_riverpod: ^2.4.9
+  hooks_riverpod: ^2.4.9
 
-  shared_preferences: ^2.2.1
+  shared_preferences: ^2.2.2
 
   # anime info
   myanimelist_api:
@@ -30,9 +30,9 @@ dependencies:
       url: https://github.com/yurtemre7/MyAnimeList-API.git
       ref: master
 
-  dynamic_color: ^1.6.7
+  dynamic_color: ^1.6.9
   efficient_autocomplete_formfield: ^0.3.2+1
-  http: ^1.1.0
+  http: ^1.1.2
 
 dev_dependencies:
   flutter_test:
