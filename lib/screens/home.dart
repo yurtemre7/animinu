@@ -10,20 +10,21 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/state_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Home extends ConsumerStatefulWidget {
+class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<Home> createState() => _HomeState();
+  State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends ConsumerState<Home> {
-  TextEditingController inputController = TextEditingController();
+class _HomeState extends State<Home> {
+  final inputController = TextEditingController().obs;
 
-  User get user => ref.read(myUser)!;
+  User get user => animinu.myUser.value!;
+  final formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -38,8 +39,8 @@ class _HomeState extends ConsumerState<Home> {
     var res = await userData.once();
     if (res.snapshot.value != null) {
       var data = res.snapshot.value! as Map<dynamic, dynamic>;
-      ref.read(username.notifier).state = data['name'];
-      ref.read(email.notifier).state = data['email'];
+      animinu.username.value = data['name'];
+      animinu.email.value = data['email'];
     }
 
     if (!user.emailVerified) {
@@ -53,7 +54,7 @@ class _HomeState extends ConsumerState<Home> {
 
   @override
   void dispose() {
-    inputController.dispose();
+    inputController.value.dispose();
     super.dispose();
   }
 
@@ -67,10 +68,6 @@ class _HomeState extends ConsumerState<Home> {
             'Deine AnimInu Liste',
             style: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
-          leading: Icon(
-            Icons.list_alt,
-            color: Theme.of(context).colorScheme.primary,
-          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.settings),
@@ -81,7 +78,7 @@ class _HomeState extends ConsumerState<Home> {
               },
             ),
           ],
-          centerTitle: true,
+          centerTitle: false,
         ),
         body: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -92,7 +89,6 @@ class _HomeState extends ConsumerState<Home> {
             ],
           ),
         ),
-        resizeToAvoidBottomInset: true,
       ),
     );
   }
@@ -126,12 +122,7 @@ class _HomeState extends ConsumerState<Home> {
               onDismissed: (direction) async {
                 FocusScope.of(context).unfocus();
                 if (direction == DismissDirection.endToStart) {
-                  await database
-                      .ref()
-                      .child(user.uid)
-                      .child('anime')
-                      .child(snapshot.key!)
-                      .remove();
+                  await database.ref().child(user.uid).child('anime').child(snapshot.key!).remove();
                 }
               },
               background: Container(
@@ -140,8 +131,7 @@ class _HomeState extends ConsumerState<Home> {
                   alignment: Alignment.centerRight,
                   child: Padding(
                     padding: const EdgeInsets.only(right: 20),
-                    child: Icon(Icons.delete,
-                        color: Theme.of(context).colorScheme.error),
+                    child: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
                   ),
                 ),
               ),
@@ -150,18 +140,16 @@ class _HomeState extends ConsumerState<Home> {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Anime entfernen'),
-                    content: Text(
-                        'Möchtest du "${data.title}" wirklich aus deiner Liste entfernen?'),
+                    content:
+                        Text('Möchtest du "${data.title}" wirklich aus deiner Liste entfernen?'),
                     actions: [
                       TextButton(
                         style: TextButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.errorContainer,
+                          backgroundColor: Theme.of(context).colorScheme.errorContainer,
                         ),
                         child: Text(
                           'Entfernen',
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.error),
+                          style: TextStyle(color: Theme.of(context).colorScheme.error),
                         ),
                         onPressed: () => Navigator.of(context).pop(true),
                       ),
@@ -185,56 +173,69 @@ class _HomeState extends ConsumerState<Home> {
 
   Widget animeEntryInput() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: EfficientAutocompleteFormField<String?>(
-              itemBuilder: (context, String? item) {
-                return Container(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: ListTile(
-                    title: Text(
-                      item ?? '',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
+            child: Form(
+              key: formKey,
+              child: EfficientAutocompleteFormField<String?>(
+                maxSuggestions: 3,
+                suggestionsBuilder: (context, items) {
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      return items[index];
+                    },
+                  );
+                },
+                itemBuilder: (context, String? item) {
+                  return Container(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: ListTile(
+                      title: Text(
+                        item ?? '',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-              onSearch: (String? search) async {
-                if (search == null) {
-                  return [];
-                }
+                  );
+                },
+                onSearch: (String? search) async {
+                  if (search == null) {
+                    return [];
+                  }
 
-                var trimmed = search.trim();
-                if (trimmed.isEmpty) {
-                  return [];
-                }
+                  var trimmed = search.trim();
+                  if (trimmed.isEmpty || trimmed.length < 3) {
+                    return [];
+                  }
 
-                if (trimmed.length < 3) {
-                  return [];
-                }
-
-                var client = ref.read(animeClient);
-
-                var res = await client.api.searchAnime(search, limit: 10);
-
-                var titles = res.map((e) => e.title).toList();
-
-                return titles;
-              },
-              controller: inputController,
-              autocorrect: false,
-              keyboardType: TextInputType.text,
-              textCapitalization: TextCapitalization.sentences,
-              onChanged: (value) {
-                setState(() {});
-              },
-              decoration: const InputDecoration(
-                hintText: 'Anime filtern oder hinzufügen..',
+                  var client = animinu.animeClient.value;
+                  var res = await client.api.searchAnime(search, limit: 10);
+                  var titles = res.map((e) => e.title).toList();
+                  return titles;
+                },
+                controller: inputController.value,
+                autocorrect: false,
+                keyboardType: TextInputType.text,
+                textCapitalization: TextCapitalization.sentences,
+                onChanged: (value) {
+                  setState(() {});
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Bitte gib einen Anime ein';
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Anime filtern oder hinzufügen..',
+                ),
               ),
             ),
           ),
@@ -242,65 +243,48 @@ class _HomeState extends ConsumerState<Home> {
             icon: const Icon(Icons.add),
             color: Theme.of(context).colorScheme.primary,
             onPressed: () {
-              if (inputController.text.isEmpty) {
+              if (!formKey.currentState!.validate()) {
                 return;
               }
               showDialog(
                 context: context,
                 builder: (context) {
-                  TextEditingController currentController =
-                      TextEditingController();
-                  TextEditingController totalController =
-                      TextEditingController();
+                  TextEditingController currentController = TextEditingController();
+                  TextEditingController totalController = TextEditingController();
                   return StatefulBuilder(
                     builder: (context, setStateDialog) {
                       return AlertDialog(
                         title: Text(
                           'Anime hinzufügen',
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary),
+                          style: TextStyle(color: Theme.of(context).colorScheme.primary),
                         ),
                         content: SingleChildScrollView(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(inputController.text),
+                              Text(inputController.value.text),
                               const SizedBox(height: 20),
                               Text(
                                 'Bei welcher Episode bist du gerade im Anime?',
-                                style: TextStyle(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .secondary),
+                                style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                               ),
                               TextFormField(
                                 controller: currentController,
                                 keyboardType: TextInputType.number,
-                                style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.tertiary),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly
-                                ],
+                                style: TextStyle(color: Theme.of(context).colorScheme.tertiary),
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                               ),
                               const SizedBox(height: 20),
                               Text(
                                 'Wie viele Folgen hat dieser Anime?',
-                                style: TextStyle(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .secondary),
+                                style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                               ),
                               TextFormField(
                                 controller: totalController,
                                 keyboardType: TextInputType.number,
-                                style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.tertiary),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly
-                                ],
+                                style: TextStyle(color: Theme.of(context).colorScheme.tertiary),
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                               ),
                             ],
                           ),
@@ -318,11 +302,9 @@ class _HomeState extends ConsumerState<Home> {
                             onPressed: () async {
                               await addEntry(
                                 entry: AnimeEntry(
-                                  title: inputController.text.trim(),
-                                  currentEpisode:
-                                      int.tryParse(currentController.text) ?? 0,
-                                  totalEpisodes:
-                                      int.tryParse(totalController.text) ?? 0,
+                                  title: inputController.value.text.trim(),
+                                  currentEpisode: int.tryParse(currentController.text) ?? 0,
+                                  totalEpisodes: int.tryParse(totalController.text) ?? 0,
                                   added: DateTime.now(),
                                 ),
                               );
@@ -330,9 +312,9 @@ class _HomeState extends ConsumerState<Home> {
                               if (!mounted) return;
 
                               pop(context);
-                              setState(() {
-                                inputController.clear();
-                              });
+
+                              inputController.value.clear();
+
                               FocusScope.of(context).unfocus();
                             },
                           ),
@@ -350,7 +332,7 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   Widget animeEntryTile(AnimeEntry data, DataSnapshot snapshot) {
-    String txt = inputController.text.toLowerCase().trim();
+    String txt = inputController.value.text.toLowerCase().trim();
 
     if (data.title.toLowerCase().contains(txt) ||
         data.title.toLowerCase().startsWith(txt) ||
@@ -453,8 +435,7 @@ class _HomeState extends ConsumerState<Home> {
                                     if ((int.tryParse(currentController.text) ??
                                             data.totalEpisodes + 1) >
                                         data.totalEpisodes) {
-                                      currentController.text =
-                                          '${data.totalEpisodes}';
+                                      currentController.text = '${data.totalEpisodes}';
                                     }
                                   });
                                 }
@@ -468,8 +449,7 @@ class _HomeState extends ConsumerState<Home> {
                             flex: 4,
                             child: IconButton(
                               onPressed: () {
-                                if (currentController.text !=
-                                    totalController.text) {
+                                if (currentController.text != totalController.text) {
                                   setState(() {
                                     currentController.text =
                                         '${int.parse(currentController.text) + 1}';
@@ -495,8 +475,7 @@ class _HomeState extends ConsumerState<Home> {
                               onPressed: () {
                                 if (totalController.text != '1') {
                                   setState(() {
-                                    totalController.text =
-                                        '${int.parse(totalController.text) - 1}';
+                                    totalController.text = '${int.parse(totalController.text) - 1}';
                                   });
                                 }
                               },
@@ -523,8 +502,7 @@ class _HomeState extends ConsumerState<Home> {
                             child: IconButton(
                               onPressed: () {
                                 setState(() {
-                                  totalController.text =
-                                      '${int.parse(totalController.text) + 1}';
+                                  totalController.text = '${int.parse(totalController.text) + 1}';
                                 });
                               },
                               icon: const Icon(Icons.add),
@@ -553,11 +531,8 @@ class _HomeState extends ConsumerState<Home> {
                                 await updateEntry(
                                   entry: AnimeEntry(
                                     title: data.title,
-                                    currentEpisode:
-                                        int.tryParse(currentController.text) ??
-                                            0,
-                                    totalEpisodes:
-                                        int.tryParse(totalController.text) ?? 0,
+                                    currentEpisode: int.tryParse(currentController.text) ?? 0,
+                                    totalEpisodes: int.tryParse(totalController.text) ?? 0,
                                     added: data.added,
                                   ),
                                   key: snapshot.key!,

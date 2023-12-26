@@ -1,19 +1,18 @@
-
 import 'package:animinu/components/separator.dart';
 import 'package:animinu/main.dart';
 import 'package:animinu/utilities.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Settings extends ConsumerStatefulWidget {
+class Settings extends StatefulWidget {
   const Settings({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<Settings> createState() => _SettingsState();
+  State<Settings> createState() => _SettingsState();
 }
 
-class _SettingsState extends ConsumerState<Settings> {
+class _SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,8 +37,8 @@ class _SettingsState extends ConsumerState<Settings> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: ListView(
             children: [
-              Consumer(
-                builder: (context, ref, child) {
+              Obx(
+                () {
                   return Column(
                     children: [
                       ListTile(
@@ -48,14 +47,14 @@ class _SettingsState extends ConsumerState<Settings> {
                           color: Theme.of(context).colorScheme.primary,
                         ),
                         title: Text(
-                          ref.watch(username) ?? 'Username nicht gefunden.',
+                          animinu.username.value ?? 'Username nicht gefunden.',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                         onTap: () {
                           TextEditingController controller =
-                              TextEditingController(text: ref.read(username));
+                              TextEditingController(text: animinu.username.value);
                           showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
@@ -78,18 +77,13 @@ class _SettingsState extends ConsumerState<Settings> {
                                   onPressed: () {
                                     if (controller.text.isNotEmpty) {
                                       // set username in database
-                                      final user = ref.read(myUser);
+                                      final user = animinu.myUser.value;
 
-                                      database
-                                          .ref()
-                                          .child(user!.uid)
-                                          .child('profile')
-                                          .update({
+                                      database.ref().child(user!.uid).child('profile').update({
                                         'name': controller.text.trim(),
                                       });
 
-                                      ref.read(username.notifier).state =
-                                          controller.text.trim();
+                                      animinu.username.value = controller.text.trim();
                                     }
                                     pop(context);
                                   },
@@ -106,23 +100,23 @@ class _SettingsState extends ConsumerState<Settings> {
                           color: Theme.of(context).colorScheme.primary,
                         ),
                         title: Text(
-                          ref.watch(email)!,
+                          animinu.email.value ?? 'E-Mail nicht gefunden.',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
-                        subtitle: ref.watch(myUser) != null
-                            ? !ref.watch(myUser)!.emailVerified
+                        subtitle: animinu.myUser.value != null
+                            ? !animinu.myUser.value!.emailVerified
                                 ? const Text(
                                     'Bitte bestätige deine E-Mail.',
                                     style: TextStyle(color: Colors.red),
                                   )
                                 : null
                             : null,
-                        onTap: ref.watch(myUser) != null
-                            ? !ref.watch(myUser)!.emailVerified
+                        onTap: animinu.myUser.value != null
+                            ? !animinu.myUser.value!.emailVerified
                                 ? () {
-                                    ref.read(myUser)!.sendEmailVerification();
+                                    animinu.myUser.value!.sendEmailVerification();
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
@@ -212,7 +206,7 @@ class _SettingsState extends ConsumerState<Settings> {
                   final sp = await SharedPreferences.getInstance();
                   await sp.clear();
                   if (!mounted) return;
-                  ref.read(myUser.notifier).state = null;
+                  animinu.reset();
                   pop(context);
                 },
               ),

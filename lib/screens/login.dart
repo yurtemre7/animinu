@@ -1,7 +1,6 @@
 import 'package:animinu/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
@@ -62,76 +61,68 @@ class _LoginState extends State<Login> {
   }
 
   Widget loginButtons(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, child) {
-        return ButtonBar(
-          alignment: MainAxisAlignment.center,
-          buttonPadding: const EdgeInsets.all(20),
-          children: [
-            TextButton(
-              onPressed: () async {
-                if (formKey.currentState!.validate()) {
-                  auth
-                      .createUserWithEmailAndPassword(
-                    email: emailController.text.trim(),
-                    password: passwordController.text.trim(),
-                  )
-                      .then((user) async {
-                    final sp = await SharedPreferences.getInstance();
-                    sp.setString('email', user.user!.email!);
-                    sp.setString('passwort', passwordController.text.trim());
-                    ref.read(myUser.notifier).state = user.user;
-                    await database
-                        .ref()
-                        .child(user.user!.uid)
-                        .child('profile')
-                        .set({
-                      'name': emailController.text.trim().split('@')[0],
-                      'email': emailController.text.trim(),
-                      'uid': user.user!.uid,
-                    });
-                    ref.read(myUser)!.sendEmailVerification();
-                  }).catchError((error) {
-                    error = error as FirebaseAuthException;
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(error.message!),
-                    ));
-                  });
-                }
-              },
-              child: const Text(
-                'Registrieren',
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (!formKey.currentState!.validate()) {
-                  return;
-                }
-                try {
-                  var user = await auth.signInWithEmailAndPassword(
-                    email: emailController.text.trim(),
-                    password: passwordController.text.trim(),
-                  );
+    return ButtonBar(
+      alignment: MainAxisAlignment.center,
+      buttonPadding: const EdgeInsets.all(20),
+      children: [
+        TextButton(
+          onPressed: () async {
+            if (formKey.currentState!.validate()) {
+              auth
+                  .createUserWithEmailAndPassword(
+                email: emailController.text.trim(),
+                password: passwordController.text.trim(),
+              )
+                  .then((user) async {
+                final sp = await SharedPreferences.getInstance();
+                sp.setString('email', user.user!.email!);
+                sp.setString('passwort', passwordController.text.trim());
+                animinu.myUser.value = user.user;
+                await database.ref().child(user.user!.uid).child('profile').set({
+                  'name': emailController.text.trim().split('@')[0],
+                  'email': emailController.text.trim(),
+                  'uid': user.user!.uid,
+                });
+                animinu.myUser.value!.sendEmailVerification();
+              }).catchError((error) {
+                error = error as FirebaseAuthException;
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(error.message!),
+                ));
+              });
+            }
+          },
+          child: const Text(
+            'Registrieren',
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            if (!formKey.currentState!.validate()) {
+              return;
+            }
+            try {
+              var user = await auth.signInWithEmailAndPassword(
+                email: emailController.text.trim(),
+                password: passwordController.text.trim(),
+              );
 
-                  final sp = await SharedPreferences.getInstance();
-                  sp.setString('email', user.user!.email!);
-                  sp.setString('passwort', passwordController.text.trim());
-                  ref.read(myUser.notifier).state = user.user;
-                } on FirebaseAuthException catch (error) {
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(error.message!),
-                  ));
-                }
-              },
-              child: const Text(
-                'Einloggen',
-              ),
-            ),
-          ],
-        );
-      },
+              final sp = await SharedPreferences.getInstance();
+              sp.setString('email', user.user!.email!);
+              sp.setString('passwort', passwordController.text.trim());
+              animinu.myUser.value = user.user;
+            } on FirebaseAuthException catch (error) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(error.message!),
+              ));
+            }
+          },
+          child: const Text(
+            'Einloggen',
+          ),
+        ),
+      ],
     );
   }
 
