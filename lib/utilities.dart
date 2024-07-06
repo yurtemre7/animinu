@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-void push(context, view) {
-  Navigator.push(context, MaterialPageRoute(builder: (context) => view));
+void push(Widget page) {
+  Get.to(() => page);
 }
 
-void pushReplacement(context, view) {
-  Navigator.pushReplacement(
-      context, MaterialPageRoute(builder: (context) => view));
+void pushReplacement(Widget page) {
+  Get.off(() => page);
 }
 
-void pop(context) {
-  Navigator.pop(context);
+void pop() {
+  Get.back();
 }
 
 bool isDarkmode(context) {

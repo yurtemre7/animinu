@@ -6,7 +6,7 @@ import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Settings extends StatefulWidget {
-  const Settings({Key? key}) : super(key: key);
+  const Settings({super.key});
 
   @override
   State<Settings> createState() => _SettingsState();
@@ -21,7 +21,7 @@ class _SettingsState extends State<Settings> {
           icon: const Icon(Icons.arrow_back_ios_new),
           color: Theme.of(context).colorScheme.primary,
           onPressed: () {
-            pop(context);
+            pop();
           },
         ),
         title: Text(
@@ -53,8 +53,7 @@ class _SettingsState extends State<Settings> {
                           ),
                         ),
                         onTap: () {
-                          TextEditingController controller =
-                              TextEditingController(text: animinu.username.value);
+                          TextEditingController controller = TextEditingController(text: animinu.username.value);
                           showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
@@ -69,7 +68,7 @@ class _SettingsState extends State<Settings> {
                                 TextButton(
                                   child: const Text('Abbrechen'),
                                   onPressed: () {
-                                    pop(context);
+                                    pop();
                                   },
                                 ),
                                 OutlinedButton(
@@ -85,7 +84,7 @@ class _SettingsState extends State<Settings> {
 
                                       animinu.username.value = controller.text.trim();
                                     }
-                                    pop(context);
+                                    pop();
                                   },
                                 ),
                               ],
@@ -207,7 +206,7 @@ class _SettingsState extends State<Settings> {
                   await sp.clear();
                   if (!mounted) return;
                   animinu.reset();
-                  pop(context);
+                  pop();
                 },
               ),
               Separator.horizontalDivider(),

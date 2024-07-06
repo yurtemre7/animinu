@@ -14,7 +14,7 @@ import 'package:get/state_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  const Home({super.key});
 
   @override
   State<Home> createState() => _HomeState();
@@ -74,7 +74,7 @@ class _HomeState extends State<Home> {
               color: Theme.of(context).colorScheme.primary,
               tooltip: 'Einstellungen',
               onPressed: () {
-                push(context, const Settings());
+                push(const Settings());
               },
             ),
           ],
@@ -293,7 +293,7 @@ class _HomeState extends State<Home> {
                           TextButton(
                             child: const Text('Abbruch'),
                             onPressed: () {
-                              pop(context);
+                              pop();
                               FocusScope.of(context).unfocus();
                             },
                           ),
@@ -311,9 +311,11 @@ class _HomeState extends State<Home> {
 
                               if (!mounted) return;
 
-                              pop(context);
+                              pop();
 
                               inputController.value.clear();
+
+                              if (!context.mounted) return;
 
                               FocusScope.of(context).unfocus();
                             },
@@ -520,7 +522,7 @@ class _HomeState extends State<Home> {
                           TextButton(
                             child: const Text('Abbruch'),
                             onPressed: () {
-                              pop(context);
+                              pop();
                               FocusScope.of(context).unfocus();
                             },
                           ),
@@ -537,8 +539,8 @@ class _HomeState extends State<Home> {
                                   ),
                                   key: snapshot.key!,
                                 );
-                                if (!mounted) return;
-                                pop(context);
+                                if (!context.mounted) return;
+                                pop();
                               }
                               FocusScope.of(context).unfocus();
                             },

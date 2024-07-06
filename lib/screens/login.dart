@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+  const Login({super.key});
 
   @override
   State<Login> createState() => _LoginState();
@@ -112,7 +112,7 @@ class _LoginState extends State<Login> {
               sp.setString('passwort', passwordController.text.trim());
               animinu.myUser.value = user.user;
             } on FirebaseAuthException catch (error) {
-              if (!mounted) return;
+              if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(error.message!),
               ));
